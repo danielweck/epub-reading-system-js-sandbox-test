@@ -18,33 +18,74 @@
         var breached = false;
         try
         {
-            breached = !window.parent
-            || (window.parent != window
-                && (typeof window.parent.document !== "undefined")
-                && (typeof window.parent.document.documentElement !== "undefined")
-            );
+            var breachedTop = false;
+            try
+            {
+                breachedTop = window.top
+                && (window.top != window
+                    && (typeof window.top.document !== undefined)
+                    && (typeof window.top.document.documentElement !== undefined)
+                );
+            }
+            catch (e)
+            {
+                breachedTop = false;
+            }
+
+            if (breachedTop)
+            {
+                console.debug(">> window.top: " + breachedTop);
+            }
+            
+            var breachedParent = false;
+            try
+            {
+                breachedParent = window.parent
+                && (window.parent != window
+                    && (typeof window.parent.document !== undefined)
+                    && (typeof window.parent.document.documentElement !== undefined)
+                );
+            }
+            catch (e)
+            {
+                breachedParent = false;
+            }
+
+            if (breachedParent)
+            {
+                console.debug(">> window.parent: " + breachedParent);
+            }
+            
+            breached = breachedTop || breachedParent;
 
             console.debug(">> 1: " + breached);
-
-            if (breached && (typeof window.parent !== "undefined"))
+            
+            if (breached)
             {
-                var p = window.parent.document.createElementNS("http://www.w3.org/1999/xhtml", "marquee");
-                p.setAttribute("style", "position: absolute; top:0; left: 0; right: 0; z-index: 9999; font-weight: bold; font-size: 200%; color: black; text-align: center; border: 1em solid red; background: white;");
-                var p1 = window.parent.document.createElementNS("http://www.w3.org/1999/xhtml", "span");
-                p1.setAttribute("style", "color: green;");
-                p1.appendChild(window.parent.document.createTextNode("SECURITY BREACH"));
-                p.appendChild(p1);
+                var win = breachedParent ? window.parent : window.top;
+                if (win)
+                {
+                    document.addEventListener("DOMContentLoaded", function()
+                    {
+                        var p = win.document.createElementNS("http://www.w3.org/1999/xhtml", "marquee");
+                        p.setAttribute("style", "position: absolute; top:0; left: 0; right: 0; z-index: 9999; font-weight: bold; font-size: 200%; color: black; text-align: center; border: 1em solid red; background: white;");
+                        var p1 = win.document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+                        p1.setAttribute("style", "color: green;");
+                        p1.appendChild(win.document.createTextNode("SECURITY BREACH"));
+                        p.appendChild(p1);
 
-                p.appendChild(window.parent.document.createTextNode(" --- "));
+                        p.appendChild(win.document.createTextNode(" --- "));
                 
-                var p2 = window.parent.document.createElementNS("http://www.w3.org/1999/xhtml", "span");
-                p2.setAttribute("style", "color: blue;");
-                p2.appendChild(window.parent.document.createTextNode("THE READING SYSTEM'S INTEGRITY HAS BEEN COMPROMISED."));
-                p.appendChild(p2);
+                        var p2 = win.document.createElementNS("http://www.w3.org/1999/xhtml", "span");
+                        p2.setAttribute("style", "color: blue;");
+                        p2.appendChild(win.document.createTextNode("THE READING SYSTEM'S INTEGRITY HAS BEEN COMPROMISED."));
+                        p.appendChild(p2);
                 
-                window.parent.document.body.insertBefore(p, window.parent.document.body.childNodes[0]);
+                        win.document.body.insertBefore(p, win.document.body.childNodes[0]);
 
-                console.debug(">> 2");
+                        console.debug(">> 2");
+                    }, false);
+                }
             }
         }
         catch(e)
@@ -74,15 +115,15 @@
     		<p>This section contains tests for Reading System integrity.</p>
 			
 			<section id="sec-001" class="otest">
-				<h4><span class="nature">[OPTIONAL]</span> <span class="test-id">sec-001</span> <code>iframe window.parent</code></h4>
+				<h4><span class="nature">[OPTIONAL]</span> <span class="test-id">sec-001</span> <code>iframe window.parent/top</code></h4>
 				
-				<p class="desc">Tests whether access (read and write) to the <code>window.parent</code> object context is forbidden, from the <code>iframe</code> (if any) that contains this content document.</p>
+				<p class="desc">Tests whether access (read and write) to the <code>window.parent/top</code> object context is forbidden, from the <code>iframe</code> (if any) that contains this content document.</p>
         		
                 <p class="conditional">Javascript scripting must be supported for this test to execute properly.</p>
                         
 				<p class="eval">The test passes if the message <strong>"PASS"</strong> is displayed below (instead of "FAIL").
 The test effectively passes if this content document is not hosted by an <code>iframe</code> (e.g. native UIWebView),
-or if the Javascript code executed in this document is unable to access the parent object context.</p>
+or if the Javascript code executed in this document is unable to access the parent/top object context.</p>
         		
                 <p style="font-size: 140%; text-align: center;">
                     <span id="wait" style="color: black;">
